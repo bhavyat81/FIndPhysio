@@ -82,7 +82,7 @@ FindPhysio/
 ```bash
 # Clone the repository
 git clone https://github.com/bhavyat81/FIndPhysio.git
-cd FIndPhysio
+cd FIndPhysio  # Repository name uses capital 'I' (FIndPhysio)
 
 # Install dependencies
 npm install

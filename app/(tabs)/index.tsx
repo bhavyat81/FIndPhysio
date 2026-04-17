@@ -62,7 +62,7 @@ export default function HomeScreen() {
   }, [search, sortByDistance, userLocation]);
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       {/* Hero Banner */}
       <View style={styles.hero}>
         <View style={styles.heroTopRow}>

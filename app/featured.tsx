@@ -77,7 +77,7 @@ export default function FeaturedScreen() {
           <View style={styles.featuredSection}>
             <Text style={styles.featuredSectionTitle}>Featured Clinics</Text>
             <Text style={styles.featuredSectionSubtitle}>
-              Top-rated physiotherapy clinics in Brampton & GTA
+              Premier physiotherapy clinic in Brampton — 200 County Court Blvd, Unit C
             </Text>
             {featuredClinics.map((c) => (
               <ClinicCard key={c.id} clinic={c} />

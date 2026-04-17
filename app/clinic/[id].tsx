@@ -78,19 +78,6 @@ export default function ClinicDetailScreen() {
             </View>
           )}
           <Text style={styles.heroName}>{clinic.name}</Text>
-          {clinic.rating && (
-            <View style={styles.ratingRow}>
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Ionicons
-                  key={i}
-                  name={i <= Math.round(clinic.rating!) ? 'star' : 'star-outline'}
-                  size={16}
-                  color={Colors.accent}
-                />
-              ))}
-              <Text style={styles.ratingText}>{clinic.rating.toFixed(1)} / 5.0</Text>
-            </View>
-          )}
         </View>
 
         {/* Quick Actions */}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   FlatList,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -18,26 +19,52 @@ export default function HomeScreen() {
   const router = useRouter();
   const [search, setSearch] = useState('');
 
-  const filteredClinics = clinics.filter(
-    (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.address.toLowerCase().includes(search.toLowerCase())
+  const filteredClinics = useMemo(
+    () =>
+      clinics.filter(
+        (c) =>
+          c.name.toLowerCase().includes(search.toLowerCase()) ||
+          c.address.toLowerCase().includes(search.toLowerCase())
+      ),
+    [search]
   );
 
-  const renderHeader = () => (
-    <View>
-      {/* Hero Section */}
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Hero Banner */}
       <View style={styles.hero}>
-        <View style={styles.heroIconWrap}>
-          <Ionicons name="medical" size={36} color={Colors.white} />
+        <View style={styles.heroTopRow}>
+          <View style={styles.heroIconWrap}>
+            <Ionicons name="medical" size={28} color={Colors.white} />
+          </View>
+          <View style={styles.heroTextWrap}>
+            <Text style={styles.heroTitle}>FindPhysio</Text>
+            <Text style={styles.heroTagline}>
+              Find Physio, Chiro, Acupuncture, Naturopath &amp; Registered Massage Therapist near you
+            </Text>
+          </View>
         </View>
-        <Text style={styles.heroTitle}>FindPhysio</Text>
-        <Text style={styles.heroSubtitle}>
-          Find Physiotherapy Clinics in Brampton & GTA
-        </Text>
+
+        {/* Nav Buttons */}
+        <View style={styles.navRow}>
+          <TouchableOpacity
+            style={[styles.navBtn, styles.navBtnFeatured]}
+            onPress={() => router.push('/featured')}
+          >
+            <Ionicons name="star" size={16} color={Colors.accent} />
+            <Text style={[styles.navBtnText, { color: Colors.accent }]}>⭐ Featured Clinics</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.navBtn, styles.navBtnAbout]}
+            onPress={() => router.push('/about')}
+          >
+            <Ionicons name="information-circle-outline" size={16} color={Colors.white} />
+            <Text style={[styles.navBtnText, { color: Colors.white }]}>ℹ️ About</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Search Bar */}
+      {/* Search Bar — outside FlatList so it never remounts */}
       <View style={styles.searchSection}>
         <View style={styles.searchBar}>
           <Ionicons name="search" size={18} color={Colors.textSecondary} />
@@ -48,63 +75,38 @@ export default function HomeScreen() {
             value={search}
             onChangeText={setSearch}
             returnKeyType="search"
+            autoCorrect={false}
+            autoCapitalize="none"
           />
           {search.length > 0 && (
-            <TouchableOpacity onPress={() => setSearch('')}>
+            <TouchableOpacity onPress={() => setSearch('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Ionicons name="close-circle" size={18} color={Colors.textSecondary} />
             </TouchableOpacity>
           )}
         </View>
-      </View>
-
-      {/* Quick Nav Row */}
-      <View style={styles.navRow}>
-        <TouchableOpacity
-          style={[styles.navBtn, styles.navBtnFeatured]}
-          onPress={() => router.push('/featured')}
-        >
-          <Ionicons name="star" size={18} color={Colors.accent} />
-          <Text style={[styles.navBtnText, { color: Colors.accent }]}>Featured Clinics</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.navBtn}
-          onPress={() => router.push('/about')}
-        >
-          <Ionicons name="information-circle-outline" size={18} color={Colors.textSecondary} />
-          <Text style={[styles.navBtnText, { color: Colors.textSecondary }]}>About</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Section Title */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>
-          {search.length > 0 ? `Results (${filteredClinics.length})` : `All Clinics (${clinics.length})`}
+        <Text style={styles.resultCount}>
+          {search.length > 0
+            ? `${filteredClinics.length} result${filteredClinics.length !== 1 ? 's' : ''} found`
+            : `${clinics.length} clinics in Brampton & GTA`}
         </Text>
       </View>
-    </View>
-  );
 
-  const renderFooter = () => (
-    <View style={{ height: Spacing.xl }} />
-  );
-
-  return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+      {/* Clinic List */}
       <FlatList
         data={filteredClinics}
         keyExtractor={(item: Clinic) => item.id}
         renderItem={({ item }) => <ClinicCard clinic={item} />}
-        ListHeaderComponent={renderHeader}
-        ListFooterComponent={renderFooter}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Ionicons name="search-outline" size={48} color={Colors.textLight} />
+            <Ionicons name="search-outline" size={52} color={Colors.textLight} />
             <Text style={styles.emptyText}>No clinics found</Text>
             <Text style={styles.emptySubText}>Try a different search term</Text>
           </View>
         }
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContent}
+        ListFooterComponent={<View style={{ height: Spacing.xl }} />}
       />
     </SafeAreaView>
   );
@@ -115,41 +117,85 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  listContent: {
-    flexGrow: 1,
-  },
   hero: {
     backgroundColor: Colors.primary,
-    alignItems: 'center',
-    paddingVertical: Spacing.xl,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.lg,
     paddingHorizontal: Spacing.md,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.shadow,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
   },
-  heroIconWrap: {
-    width: 68,
-    height: 68,
-    borderRadius: BorderRadius.full,
-    backgroundColor: Colors.white + '22',
-    alignItems: 'center',
-    justifyContent: 'center',
+  heroTopRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.sm,
     marginBottom: Spacing.md,
   },
+  heroIconWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.primaryDark,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  heroTextWrap: {
+    flex: 1,
+  },
   heroTitle: {
-    fontSize: FontSizes.xxl + 4,
+    fontSize: FontSizes.xxl,
     fontWeight: '800',
     color: Colors.white,
-    letterSpacing: 0.5,
-    marginBottom: Spacing.xs,
+    letterSpacing: 0.3,
   },
-  heroSubtitle: {
-    fontSize: FontSizes.md,
+  heroTagline: {
+    fontSize: FontSizes.xs,
     color: Colors.white + 'DD',
-    textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 18,
+    marginTop: 2,
+  },
+  navRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  navBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    borderRadius: BorderRadius.md,
+    paddingVertical: Spacing.sm + 2,
+    borderWidth: 1.5,
+    borderColor: Colors.white + '44',
+  },
+  navBtnFeatured: {
+    backgroundColor: Colors.white + '18',
+    borderColor: Colors.accent + '88',
+  },
+  navBtnAbout: {
+    backgroundColor: Colors.white + '18',
+    borderColor: Colors.white + '44',
+  },
+  navBtnText: {
+    fontSize: FontSizes.sm,
+    fontWeight: '700',
   },
   searchSection: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
     backgroundColor: Colors.white,
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
@@ -161,52 +207,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm + 2,
     gap: Spacing.sm,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: Colors.border,
   },
   searchInput: {
     flex: 1,
     fontSize: FontSizes.md,
     color: Colors.text,
+    padding: 0,
   },
-  navRow: {
-    flexDirection: 'row',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    gap: Spacing.sm,
-    backgroundColor: Colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+  resultCount: {
+    fontSize: FontSizes.xs,
+    color: Colors.textSecondary,
+    marginTop: Spacing.xs,
+    marginLeft: Spacing.xs,
+    fontWeight: '500',
   },
-  navBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.xs,
-    backgroundColor: Colors.background,
-    borderRadius: BorderRadius.md,
-    paddingVertical: Spacing.sm,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  navBtnFeatured: {
-    backgroundColor: Colors.featuredBg,
-    borderColor: Colors.featured,
-  },
-  navBtnText: {
-    fontSize: FontSizes.sm,
-    fontWeight: '600',
-  },
-  sectionHeader: {
-    paddingHorizontal: Spacing.md,
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.sm,
-  },
-  sectionTitle: {
-    fontSize: FontSizes.lg,
-    fontWeight: '700',
-    color: Colors.text,
+  listContent: {
+    paddingTop: Spacing.sm,
+    flexGrow: 1,
   },
   emptyState: {
     alignItems: 'center',

@@ -8,6 +8,7 @@ import {
   FlatList,
   Platform,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -27,29 +28,42 @@ export default function HomeScreen() {
   const handleNearMe = async () => {
     if (sortByDistance) {
       setSortByDistance(false);
+      setSearch('');
       return;
     }
     setLocationLoading(true);
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        const loc = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced,
-        });
-        setUserLocation({ lat: loc.coords.latitude, lng: loc.coords.longitude });
-        setSortByDistance(true);
+      if (status !== 'granted') {
+        Alert.alert(
+          'Location Permission Required',
+          'Please allow location access to find clinics near you.',
+          [{ text: 'OK' }]
+        );
+        return;
       }
+      const loc = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      setUserLocation({ lat: loc.coords.latitude, lng: loc.coords.longitude });
+      setSortByDistance(true);
+      setSearch('');
     } finally {
       setLocationLoading(false);
     }
   };
 
+  const showResults = search.length >= 2 || sortByDistance;
+
   const filteredClinics = useMemo((): ClinicWithOptDist[] => {
-    const list = clinics.filter(
-      (c) =>
-        c.name.toLowerCase().includes(search.toLowerCase()) ||
-        c.address.toLowerCase().includes(search.toLowerCase())
-    );
+    if (!showResults) return [];
+    const list = search.length >= 2
+      ? clinics.filter(
+          (c) =>
+            c.name.toLowerCase().includes(search.toLowerCase()) ||
+            c.address.toLowerCase().includes(search.toLowerCase())
+        )
+      : clinics;
     if (sortByDistance && userLocation) {
       return list
         .map((c) => ({
@@ -59,7 +73,7 @@ export default function HomeScreen() {
         .sort((a, b) => (a.distance ?? 0) - (b.distance ?? 0));
     }
     return list;
-  }, [search, sortByDistance, userLocation]);
+  }, [search, sortByDistance, userLocation, showResults]);
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -78,65 +92,105 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Search Bar with inline Near Me */}
-      <View style={styles.searchSection}>
-        <View style={styles.searchRow}>
-          <View style={styles.searchBar}>
-            <Ionicons name="search" size={18} color={Colors.textSecondary} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search clinics by name or address..."
-              placeholderTextColor={Colors.textLight}
-              value={search}
-              onChangeText={setSearch}
-              returnKeyType="search"
-              autoCorrect={false}
-              autoCapitalize="none"
+      {/* Find Rehab Near Me Button */}
+      <View style={styles.nearMeSection}>
+        <TouchableOpacity
+          style={[styles.findNearMeBtn, sortByDistance && styles.findNearMeBtnActive]}
+          onPress={handleNearMe}
+          activeOpacity={0.85}
+        >
+          {locationLoading ? (
+            <ActivityIndicator size="small" color={Colors.white} />
+          ) : (
+            <Ionicons
+              name={sortByDistance ? 'location' : 'location-outline'}
+              size={22}
+              color={Colors.white}
             />
-            {search.length > 0 && (
-              <TouchableOpacity onPress={() => setSearch('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                <Ionicons name="close-circle" size={18} color={Colors.textSecondary} />
-              </TouchableOpacity>
-            )}
-          </View>
-          <TouchableOpacity
-            style={[styles.nearMeBtn, sortByDistance && styles.nearMeBtnActive]}
-            onPress={handleNearMe}
-            activeOpacity={0.8}
-          >
-            {locationLoading ? (
-              <ActivityIndicator size="small" color={Colors.white} />
-            ) : (
-              <Ionicons name="location" size={18} color={Colors.white} />
-            )}
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.resultCount}>
-          {search.length > 0
-            ? `${filteredClinics.length} result${filteredClinics.length !== 1 ? 's' : ''} found`
-            : sortByDistance
-            ? `${filteredClinics.length} clinics sorted by distance`
-            : `${clinics.length} clinics in Brampton & GTA`}
-        </Text>
+          )}
+          <Text style={styles.findNearMeBtnText}>
+            {locationLoading
+              ? 'Finding your location...'
+              : sortByDistance
+              ? 'Showing Clinics Near You'
+              : 'Find Rehab Near Me'}
+          </Text>
+          {!locationLoading && (
+            <Ionicons
+              name={sortByDistance ? 'close-circle' : 'chevron-forward'}
+              size={18}
+              color={Colors.white + 'CC'}
+            />
+          )}
+        </TouchableOpacity>
       </View>
 
-      {/* Clinic List */}
-      <FlatList
-        data={filteredClinics}
-        keyExtractor={(item: ClinicWithOptDist) => item.id}
-        renderItem={({ item }) => <ClinicCard clinic={item} distance={item.distance} />}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Ionicons name="search-outline" size={52} color={Colors.textLight} />
-            <Text style={styles.emptyText}>No clinics found</Text>
-            <Text style={styles.emptySubText}>Try a different search term</Text>
+      {/* Search Bar */}
+      <View style={styles.searchSection}>
+        <View style={styles.searchBar}>
+          <Ionicons name="search" size={18} color={Colors.textSecondary} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search by clinic name..."
+            placeholderTextColor={Colors.textLight}
+            value={search}
+            onChangeText={(text) => {
+              setSearch(text);
+              if (text.length > 0) setSortByDistance(false);
+            }}
+            returnKeyType="search"
+            autoCorrect={false}
+            autoCapitalize="none"
+          />
+          {search.length > 0 && (
+            <TouchableOpacity onPress={() => setSearch('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Ionicons name="close-circle" size={18} color={Colors.textSecondary} />
+            </TouchableOpacity>
+          )}
+        </View>
+        {search.length > 0 && search.length < 2 && (
+          <Text style={styles.searchHint}>Type at least 2 characters to search</Text>
+        )}
+        {showResults && (
+          <Text style={styles.resultCount}>
+            {sortByDistance
+              ? `${filteredClinics.length} clinic${filteredClinics.length !== 1 ? 's' : ''} sorted by distance`
+              : `${filteredClinics.length} result${filteredClinics.length !== 1 ? 's' : ''} found`}
+          </Text>
+        )}
+      </View>
+
+      {/* Clinic List or Empty State */}
+      {showResults ? (
+        <FlatList
+          data={filteredClinics}
+          keyExtractor={(item: ClinicWithOptDist) => item.id}
+          renderItem={({ item }) => <ClinicCard clinic={item} distance={item.distance} />}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <Ionicons name="search-outline" size={52} color={Colors.textLight} />
+              <Text style={styles.emptyText}>No clinics found</Text>
+              <Text style={styles.emptySubText}>Try a different search term</Text>
+            </View>
+          }
+          ListFooterComponent={<View style={{ height: Spacing.xl }} />}
+        />
+      ) : (
+        <View style={styles.defaultState}>
+          <View style={styles.defaultIconWrap}>
+            <Ionicons name="medkit-outline" size={64} color={Colors.primary + '66'} />
           </View>
-        }
-        ListFooterComponent={<View style={{ height: Spacing.xl }} />}
-      />
+          <Text style={styles.defaultTitle}>Discover Rehab Clinics</Text>
+          <Text style={styles.defaultSubText}>
+            Search by clinic name or tap{'\n'}
+            <Text style={styles.defaultSubTextBold}>Find Rehab Near Me</Text>
+            {'\n'}to discover clinics nearby
+          </Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -192,7 +246,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     marginTop: 2,
   },
-  searchSection: {
+  nearMeSection: {
     backgroundColor: Colors.white,
     paddingHorizontal: Spacing.md,
     paddingTop: Spacing.md,
@@ -200,13 +254,46 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
-  searchRow: {
+  findNearMeBtn: {
+    backgroundColor: Colors.primary,
+    borderRadius: BorderRadius.md,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.primaryDark,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
+  },
+  findNearMeBtnActive: {
+    backgroundColor: Colors.primaryDark,
+  },
+  findNearMeBtnText: {
+    color: Colors.white,
+    fontSize: FontSizes.md,
+    fontWeight: '700',
+    flex: 1,
+    textAlign: 'center',
+  },
+  searchSection: {
+    backgroundColor: Colors.white,
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
   searchBar: {
-    flex: 1,
     backgroundColor: Colors.background,
     borderRadius: BorderRadius.full,
     flexDirection: 'row',
@@ -223,17 +310,11 @@ const styles = StyleSheet.create({
     color: Colors.text,
     padding: 0,
   },
-  nearMeBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: BorderRadius.full,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  nearMeBtnActive: {
-    backgroundColor: Colors.primaryDark,
+  searchHint: {
+    fontSize: FontSizes.xs,
+    color: Colors.textLight,
+    marginTop: Spacing.xs,
+    marginLeft: Spacing.xs,
   },
   resultCount: {
     fontSize: FontSizes.xs,
@@ -259,5 +340,37 @@ const styles = StyleSheet.create({
   emptySubText: {
     fontSize: FontSizes.sm,
     color: Colors.textLight,
+  },
+  defaultState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.xl,
+    gap: Spacing.md,
+  },
+  defaultIconWrap: {
+    width: 100,
+    height: 100,
+    borderRadius: BorderRadius.full,
+    backgroundColor: Colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.sm,
+  },
+  defaultTitle: {
+    fontSize: FontSizes.xl,
+    fontWeight: '700',
+    color: Colors.textSecondary,
+    textAlign: 'center',
+  },
+  defaultSubText: {
+    fontSize: FontSizes.md,
+    color: Colors.textLight,
+    textAlign: 'center',
+    lineHeight: 26,
+  },
+  defaultSubTextBold: {
+    fontWeight: '700',
+    color: Colors.primary,
   },
 });

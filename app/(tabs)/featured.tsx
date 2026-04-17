@@ -8,11 +8,11 @@ import {
   TextInput,
   Alert,
   Linking,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getFeaturedClinics } from '@/data/clinics';
-import ClinicCard from '@/components/ClinicCard';
+import { getFeaturedClinics, Clinic } from '@/data/clinics';
 import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/Colors';
 
 const INQUIRY_EMAIL = 'bhavyat81@gmail.com';
@@ -39,6 +39,108 @@ const BENEFITS = [
     desc: 'We verify your clinic information to build trust with potential patients.',
   },
 ];
+
+function FeaturedClinicCard({ clinic }: { clinic: Clinic }) {
+  const handleCall = () => {
+    if (clinic.phone) {
+      Linking.openURL(`tel:${clinic.phone.replace(/\s/g, '')}`);
+    }
+  };
+
+  const handleDirections = () => {
+    const destination = encodeURIComponent(
+      clinic.address !== 'Brampton, ON' ? clinic.address : clinic.name + ', Brampton, ON'
+    );
+    Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${destination}`).catch(() =>
+      Alert.alert('Error', 'Unable to open maps application.')
+    );
+  };
+
+  const handleWebsite = () => {
+    if (clinic.website) {
+      Linking.openURL(clinic.website).catch(() =>
+        Alert.alert('Error', 'Unable to open website.')
+      );
+    }
+  };
+
+  return (
+    <View style={richStyles.card}>
+      {/* Featured Badge Header */}
+      <View style={richStyles.badgeHeader}>
+        <Ionicons name="star" size={14} color={Colors.accent} />
+        <Text style={richStyles.badgeText}>FEATURED CLINIC</Text>
+      </View>
+
+      <View style={richStyles.cardBody}>
+        {/* Clinic Name */}
+        <View style={richStyles.nameRow}>
+          <View style={richStyles.iconWrap}>
+            <Ionicons name="medical" size={26} color={Colors.primary} />
+          </View>
+          <Text style={richStyles.clinicName}>{clinic.name}</Text>
+        </View>
+
+        {/* Address */}
+        <View style={richStyles.infoRow}>
+          <Ionicons name="location" size={16} color={Colors.primary} />
+          <Text style={richStyles.infoText}>{clinic.address}</Text>
+        </View>
+
+        {/* Phone */}
+        {clinic.phone ? (
+          <TouchableOpacity style={richStyles.infoRow} onPress={handleCall} activeOpacity={0.7}>
+            <Ionicons name="call" size={16} color={Colors.primary} />
+            <Text style={[richStyles.infoText, richStyles.infoLink]}>{clinic.phone}</Text>
+          </TouchableOpacity>
+        ) : null}
+
+        {/* Website */}
+        {clinic.website ? (
+          <TouchableOpacity style={richStyles.infoRow} onPress={handleWebsite} activeOpacity={0.7}>
+            <Ionicons name="globe" size={16} color={Colors.primary} />
+            <Text style={[richStyles.infoText, richStyles.infoLink]} numberOfLines={1}>
+              {clinic.website.replace(/^https?:\/\//, '')}
+            </Text>
+          </TouchableOpacity>
+        ) : null}
+
+        {/* Services */}
+        {clinic.services && clinic.services.length > 0 && (
+          <View style={richStyles.servicesSection}>
+            <Text style={richStyles.servicesLabel}>Services Offered</Text>
+            <View style={richStyles.serviceChips}>
+              {clinic.services.map((service, i) => (
+                <View key={i} style={richStyles.chip}>
+                  <Text style={richStyles.chipText}>{service}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Description */}
+        {clinic.description ? (
+          <Text style={richStyles.description}>{clinic.description}</Text>
+        ) : null}
+
+        {/* Action Buttons */}
+        <View style={richStyles.actions}>
+          {clinic.phone && (
+            <TouchableOpacity style={richStyles.callBtn} onPress={handleCall} activeOpacity={0.85}>
+              <Ionicons name="call" size={18} color={Colors.white} />
+              <Text style={richStyles.callBtnText}>Call Now</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity style={richStyles.directionsBtn} onPress={handleDirections} activeOpacity={0.85}>
+            <Ionicons name="navigate" size={18} color={Colors.primary} />
+            <Text style={richStyles.directionsBtnText}>Get Directions</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+}
 
 export default function FeaturedScreen() {
   const featuredClinics = getFeaturedClinics();
@@ -72,15 +174,15 @@ export default function FeaturedScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Featured Clinics List */}
+        {/* Featured Clinics Section */}
         {featuredClinics.length > 0 && (
           <View style={styles.featuredSection}>
-            <Text style={styles.featuredSectionTitle}>Featured Clinics</Text>
+            <Text style={styles.featuredSectionTitle}>⭐ Featured Clinics</Text>
             <Text style={styles.featuredSectionSubtitle}>
-              Premier physiotherapy clinic in Brampton — 200 County Court Blvd, Unit C
+              Premium physiotherapy clinics — full details below
             </Text>
             {featuredClinics.map((c) => (
-              <ClinicCard key={c.id} clinic={c} />
+              <FeaturedClinicCard key={c.id} clinic={c} />
             ))}
           </View>
         )}
@@ -217,6 +319,155 @@ export default function FeaturedScreen() {
     </SafeAreaView>
   );
 }
+
+const richStyles = StyleSheet.create({
+  card: {
+    backgroundColor: Colors.card,
+    borderRadius: BorderRadius.md,
+    marginHorizontal: Spacing.md,
+    marginBottom: Spacing.md,
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: Colors.featured,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.shadow,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.12,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
+  },
+  badgeHeader: {
+    backgroundColor: Colors.featured,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    gap: Spacing.xs,
+  },
+  badgeText: {
+    color: Colors.white,
+    fontSize: FontSizes.xs,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  cardBody: {
+    padding: Spacing.md,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  iconWrap: {
+    width: 46,
+    height: 46,
+    borderRadius: BorderRadius.sm,
+    backgroundColor: Colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  clinicName: {
+    fontSize: FontSizes.xl,
+    fontWeight: '800',
+    color: Colors.text,
+    flex: 1,
+    lineHeight: 28,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.sm,
+    marginBottom: Spacing.sm,
+  },
+  infoText: {
+    fontSize: FontSizes.md,
+    color: Colors.textSecondary,
+    flex: 1,
+    lineHeight: 22,
+  },
+  infoLink: {
+    color: Colors.primary,
+    textDecorationLine: 'underline',
+  },
+  servicesSection: {
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.sm,
+  },
+  servicesLabel: {
+    fontSize: FontSizes.sm,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: Spacing.sm,
+  },
+  serviceChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.xs,
+  },
+  chip: {
+    backgroundColor: Colors.primaryLight,
+    borderRadius: BorderRadius.full,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderWidth: 1,
+    borderColor: Colors.primary + '44',
+  },
+  chipText: {
+    fontSize: FontSizes.xs,
+    fontWeight: '600',
+    color: Colors.primaryDark,
+  },
+  description: {
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
+    lineHeight: 22,
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.sm,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    marginTop: Spacing.md,
+  },
+  callBtn: {
+    flex: 1,
+    backgroundColor: Colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    paddingVertical: Spacing.sm + 2,
+    borderRadius: BorderRadius.md,
+  },
+  callBtnText: {
+    color: Colors.white,
+    fontSize: FontSizes.md,
+    fontWeight: '700',
+  },
+  directionsBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    paddingVertical: Spacing.sm + 2,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
+  },
+  directionsBtnText: {
+    color: Colors.primary,
+    fontSize: FontSizes.md,
+    fontWeight: '700',
+  },
+});
 
 const styles = StyleSheet.create({
   container: {

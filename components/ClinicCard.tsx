@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Linking, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { Clinic } from '@/data/clinics';
 import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/Colors';
 
@@ -12,12 +11,6 @@ interface ClinicCardProps {
 }
 
 export default function ClinicCard({ clinic, distance, compact = false }: ClinicCardProps) {
-  const router = useRouter();
-
-  const handlePress = () => {
-    router.push(`/clinic/${clinic.id}`);
-  };
-
   const handleCall = () => {
     if (clinic.phone) {
       Linking.openURL(`tel:${clinic.phone.replace(/\s/g, '')}`);
@@ -32,11 +25,7 @@ export default function ClinicCard({ clinic, distance, compact = false }: Clinic
   };
 
   return (
-    <TouchableOpacity
-      style={[styles.card, clinic.featured && styles.featuredCard]}
-      onPress={handlePress}
-      activeOpacity={0.85}
-    >
+    <View style={[styles.card, clinic.featured && styles.featuredCard]}>
       {clinic.featured && (
         <View style={styles.featuredBadge}>
           <Ionicons name="star" size={10} color={Colors.accent} />
@@ -68,13 +57,6 @@ export default function ClinicCard({ clinic, distance, compact = false }: Clinic
               </Text>
             </View>
 
-            {clinic.phone && (
-              <View style={styles.infoRow}>
-                <Ionicons name="call-outline" size={14} color={Colors.textSecondary} />
-                <Text style={styles.infoText}>{clinic.phone}</Text>
-              </View>
-            )}
-
             <View style={styles.actions}>
               {clinic.phone && (
                 <TouchableOpacity style={styles.callBtn} onPress={handleCall}>
@@ -86,15 +68,11 @@ export default function ClinicCard({ clinic, distance, compact = false }: Clinic
                 <Ionicons name="navigate" size={14} color={Colors.primary} />
                 <Text style={styles.directionsBtnText}>Directions</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.detailBtn} onPress={handlePress}>
-                <Text style={styles.detailBtnText}>View Details</Text>
-                <Ionicons name="chevron-forward" size={14} color={Colors.primary} />
-              </TouchableOpacity>
             </View>
           </>
         )}
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }
 
@@ -209,17 +187,6 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   directionsBtnText: {
-    color: Colors.primary,
-    fontSize: FontSizes.sm,
-    fontWeight: '600',
-  },
-  detailBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    marginLeft: 'auto',
-  },
-  detailBtnText: {
     color: Colors.primary,
     fontSize: FontSizes.sm,
     fontWeight: '600',

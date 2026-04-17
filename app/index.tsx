@@ -7,30 +7,64 @@ import {
   TextInput,
   FlatList,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { clinics, Clinic } from '@/data/clinics';
+import * as Location from 'expo-location';
+import { clinics, Clinic, getDistance } from '@/data/clinics';
 import ClinicCard from '@/components/ClinicCard';
 import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/Colors';
+
+type ClinicWithOptDist = Clinic & { distance?: number };
 
 export default function HomeScreen() {
   const router = useRouter();
   const [search, setSearch] = useState('');
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [sortByDistance, setSortByDistance] = useState(false);
 
-  const filteredClinics = useMemo(
-    () =>
-      clinics.filter(
-        (c) =>
-          c.name.toLowerCase().includes(search.toLowerCase()) ||
-          c.address.toLowerCase().includes(search.toLowerCase())
-      ),
-    [search]
-  );
+  const handleNearMe = async () => {
+    if (sortByDistance) {
+      setSortByDistance(false);
+      return;
+    }
+    setLocationLoading(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        const loc = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        setUserLocation({ lat: loc.coords.latitude, lng: loc.coords.longitude });
+        setSortByDistance(true);
+      }
+    } finally {
+      setLocationLoading(false);
+    }
+  };
+
+  const filteredClinics = useMemo((): ClinicWithOptDist[] => {
+    const list = clinics.filter(
+      (c) =>
+        c.name.toLowerCase().includes(search.toLowerCase()) ||
+        c.address.toLowerCase().includes(search.toLowerCase())
+    );
+    if (sortByDistance && userLocation) {
+      return list
+        .map((c) => ({
+          ...c,
+          distance: getDistance(userLocation.lat, userLocation.lng, c.latitude, c.longitude),
+        }))
+        .sort((a, b) => (a.distance ?? 0) - (b.distance ?? 0));
+    }
+    return list;
+  }, [search, sortByDistance, userLocation]);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       {/* Hero Banner */}
       <View style={styles.hero}>
         <View style={styles.heroTopRow}>
@@ -40,7 +74,7 @@ export default function HomeScreen() {
           <View style={styles.heroTextWrap}>
             <Text style={styles.heroTitle}>FindPhysio</Text>
             <Text style={styles.heroTagline}>
-              Find Physio, Chiro, Acupuncture, Naturopath &amp; Registered Massage Therapist near you
+              Your trusted guide to physiotherapy, chiropractic, acupuncture, naturopathy, and registered massage therapy clinics in Brampton.
             </Text>
           </View>
         </View>
@@ -52,14 +86,25 @@ export default function HomeScreen() {
             onPress={() => router.push('/featured')}
           >
             <Ionicons name="star" size={16} color={Colors.accent} />
-            <Text style={[styles.navBtnText, { color: Colors.accent }]}>⭐ Featured Clinics</Text>
+            <Text style={[styles.navBtnText, { color: Colors.accent }]}>Featured Clinics</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.navBtn, sortByDistance ? styles.navBtnNearMeActive : styles.navBtnNearMe]}
+            onPress={handleNearMe}
+          >
+            {locationLoading ? (
+              <ActivityIndicator size="small" color={Colors.white} />
+            ) : (
+              <Ionicons name="location" size={16} color={Colors.white} />
+            )}
+            <Text style={[styles.navBtnText, { color: Colors.white }]}>Near Me</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.navBtn, styles.navBtnAbout]}
             onPress={() => router.push('/about')}
           >
             <Ionicons name="information-circle-outline" size={16} color={Colors.white} />
-            <Text style={[styles.navBtnText, { color: Colors.white }]}>ℹ️ About</Text>
+            <Text style={[styles.navBtnText, { color: Colors.white }]}>About</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -87,6 +132,8 @@ export default function HomeScreen() {
         <Text style={styles.resultCount}>
           {search.length > 0
             ? `${filteredClinics.length} result${filteredClinics.length !== 1 ? 's' : ''} found`
+            : sortByDistance
+            ? `${filteredClinics.length} clinics sorted by distance`
             : `${clinics.length} clinics in Brampton & GTA`}
         </Text>
       </View>
@@ -94,8 +141,8 @@ export default function HomeScreen() {
       {/* Clinic List */}
       <FlatList
         data={filteredClinics}
-        keyExtractor={(item: Clinic) => item.id}
-        renderItem={({ item }) => <ClinicCard clinic={item} />}
+        keyExtractor={(item: ClinicWithOptDist) => item.id}
+        renderItem={({ item }) => <ClinicCard clinic={item} distance={item.distance} />}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
@@ -119,9 +166,9 @@ const styles = StyleSheet.create({
   },
   hero: {
     backgroundColor: Colors.primary,
-    paddingTop: Spacing.md,
     paddingBottom: Spacing.lg,
     paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.md,
     ...Platform.select({
       ios: {
         shadowColor: Colors.shadow,
@@ -182,6 +229,14 @@ const styles = StyleSheet.create({
   navBtnFeatured: {
     backgroundColor: Colors.white + '18',
     borderColor: Colors.accent + '88',
+  },
+  navBtnNearMe: {
+    backgroundColor: Colors.white + '18',
+    borderColor: Colors.white + '44',
+  },
+  navBtnNearMeActive: {
+    backgroundColor: Colors.primaryDark,
+    borderColor: Colors.white + '88',
   },
   navBtnAbout: {
     backgroundColor: Colors.white + '18',

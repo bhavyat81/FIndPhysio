@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Linking,
   Alert,
-  Platform,
 } from 'react-native';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -46,14 +45,10 @@ export default function ClinicDetailScreen() {
   };
 
   const handleDirections = () => {
-    const query = encodeURIComponent(
+    const destination = encodeURIComponent(
       clinic.address !== 'Brampton, ON' ? clinic.address : clinic.name + ', Brampton, ON'
     );
-    const url =
-      Platform.OS === 'ios'
-        ? `maps:?q=${query}`
-        : `https://maps.google.com/?q=${query}`;
-    Linking.openURL(url).catch(() =>
+    Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${destination}`).catch(() =>
       Alert.alert('Error', 'Unable to open maps application.')
     );
   };

@@ -9,10 +9,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/Colors';
 import { clinics } from '@/data/clinics';
 
 export default function AboutScreen() {
+  const router = useRouter();
+
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -22,7 +25,7 @@ export default function AboutScreen() {
             <Ionicons name="medical" size={44} color={Colors.white} />
           </View>
           <Text style={styles.appName}>FindPhysio</Text>
-          <Text style={styles.appTagline}>Find Physio, Chiro, Acupuncture, Naturopath &amp; Registered Massage Therapist near you</Text>
+          <Text style={styles.appTagline}>Your trusted guide to physiotherapy, chiropractic, acupuncture, naturopathy, and registered massage therapy clinics in Brampton.</Text>
           <View style={styles.versionBadge}>
             <Text style={styles.versionText}>Version 1.0.0</Text>
           </View>
@@ -49,14 +52,10 @@ export default function AboutScreen() {
           <Text style={styles.sectionTitle}>About the App</Text>
           <View style={styles.card}>
             <Text style={styles.bodyText}>
-              FindPhysio is your local guide to physiotherapy, chiropractic, acupuncture,
-              naturopathy, and registered massage therapy clinics in Brampton, Ontario. Whether
-              you&apos;re recovering from an injury, managing chronic pain, or looking for sports
-              rehabilitation, we help you find the right clinic near you.
+              FindPhysio is Brampton&apos;s comprehensive healthcare clinic directory. Discover top physiotherapy, chiropractic, acupuncture, naturopathy, and registered massage therapy (RMT) clinics near you.
             </Text>
             <Text style={[styles.bodyText, { marginTop: Spacing.sm }]}>
-              Browse the clinic list, search by name or address, and tap any clinic to see full
-              details, call them directly, or get directions.
+              Whether you&apos;re recovering from an injury, managing chronic pain, seeking sports rehabilitation, or looking for holistic wellness care — we connect you with trusted local practitioners across Brampton and the Greater Toronto Area.
             </Text>
           </View>
         </View>
@@ -93,7 +92,7 @@ export default function AboutScreen() {
             </Text>
             <TouchableOpacity
               style={styles.featuredBtn}
-              onPress={() => Linking.openURL('mailto:featured@findphysio.ca')}
+              onPress={() => router.push('/featured')}
             >
               <Ionicons name="star" size={16} color={Colors.white} />
               <Text style={styles.featuredBtnText}>Learn About Featured Placement</Text>
@@ -107,10 +106,10 @@ export default function AboutScreen() {
           <View style={styles.card}>
             <TouchableOpacity
               style={styles.contactRow}
-              onPress={() => Linking.openURL('mailto:info@findphysio.ca')}
+              onPress={() => Linking.openURL('mailto:bhavyat81@gmail.com')}
             >
               <Ionicons name="mail" size={18} color={Colors.primary} />
-              <Text style={styles.contactText}>info@findphysio.ca</Text>
+              <Text style={styles.contactText}>bhavyat81@gmail.com</Text>
             </TouchableOpacity>
           </View>
         </View>

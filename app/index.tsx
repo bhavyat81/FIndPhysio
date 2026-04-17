@@ -64,7 +64,7 @@ export default function HomeScreen() {
   }, [search, sortByDistance, userLocation]);
 
   return (
-    <SafeAreaView style={styles.container} edges={[]}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       {/* Hero Banner */}
       <View style={styles.hero}>
         <View style={styles.heroTopRow}>
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     paddingBottom: Spacing.lg,
     paddingHorizontal: Spacing.md,
-    paddingTop: Spacing.sm,
+    paddingTop: Spacing.md,
     ...Platform.select({
       ios: {
         shadowColor: Colors.shadow,

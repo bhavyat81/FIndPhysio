@@ -46,12 +46,6 @@ export default function ClinicCard({ clinic, distance, compact = false }: Clinic
             <Text style={styles.name} numberOfLines={2}>
               {clinic.name}
             </Text>
-            {clinic.rating && (
-              <View style={styles.ratingRow}>
-                <Ionicons name="star" size={12} color={Colors.accent} />
-                <Text style={styles.rating}>{clinic.rating.toFixed(1)}</Text>
-              </View>
-            )}
           </View>
           {distance !== undefined && (
             <Text style={styles.distance}>{distance} km</Text>
@@ -155,17 +149,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.text,
     lineHeight: 22,
-  },
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    marginTop: 2,
-  },
-  rating: {
-    fontSize: FontSizes.xs,
-    color: Colors.textSecondary,
-    fontWeight: '600',
   },
   distance: {
     fontSize: FontSizes.sm,

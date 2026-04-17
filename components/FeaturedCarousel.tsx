@@ -42,12 +42,6 @@ export default function FeaturedCarousel({ clinics }: FeaturedCarouselProps) {
             <Text style={styles.name} numberOfLines={2}>
               {clinic.name}
             </Text>
-            {clinic.rating && (
-              <View style={styles.ratingRow}>
-                <Ionicons name="star" size={12} color={Colors.accent} />
-                <Text style={styles.rating}>{clinic.rating.toFixed(1)}</Text>
-              </View>
-            )}
             <Text style={styles.address} numberOfLines={2}>
               {clinic.address}
             </Text>

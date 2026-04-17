@@ -22,7 +22,7 @@ export default function AboutScreen() {
             <Ionicons name="medical" size={44} color={Colors.white} />
           </View>
           <Text style={styles.appName}>FindPhysio</Text>
-          <Text style={styles.appTagline}>Find physiotherapy clinics near you in Brampton, Ontario</Text>
+          <Text style={styles.appTagline}>Find Physio, Chiro, Acupuncture, Naturopath &amp; Registered Massage Therapist near you</Text>
           <View style={styles.versionBadge}>
             <Text style={styles.versionText}>Version 1.0.0</Text>
           </View>
@@ -49,15 +49,14 @@ export default function AboutScreen() {
           <Text style={styles.sectionTitle}>About the App</Text>
           <View style={styles.card}>
             <Text style={styles.bodyText}>
-              FindPhysio is your local guide to physiotherapy and rehabilitation clinics in
-              Brampton, Ontario. Whether you&apos;re recovering from an injury, managing chronic
-              pain, or looking for sports rehabilitation, we help you find the right clinic
-              near you.
+              FindPhysio is your local guide to physiotherapy, chiropractic, acupuncture,
+              naturopathy, and registered massage therapy clinics in Brampton, Ontario. Whether
+              you&apos;re recovering from an injury, managing chronic pain, or looking for sports
+              rehabilitation, we help you find the right clinic near you.
             </Text>
             <Text style={[styles.bodyText, { marginTop: Spacing.sm }]}>
-              Use the map to explore clinics visually, or browse the list sorted by distance
-              from your location. Tap any clinic to see full details, call them directly, or
-              get directions.
+              Browse the clinic list, search by name or address, and tap any clinic to see full
+              details, call them directly, or get directions.
             </Text>
           </View>
         </View>
@@ -67,12 +66,12 @@ export default function AboutScreen() {
           <Text style={styles.sectionTitle}>Features</Text>
           <View style={styles.card}>
             {[
-              { icon: 'map', text: 'Interactive map with clinic pins' },
-              { icon: 'location', text: 'GPS-based distance sorting' },
+              { icon: 'search', text: 'Search & filter 60+ Brampton clinics' },
               { icon: 'call', text: 'One-tap calling' },
               { icon: 'navigate', text: 'Instant directions via Maps' },
               { icon: 'star', text: 'Featured clinic highlighting' },
-              { icon: 'search', text: 'Search & filter clinics' },
+              { icon: 'body', text: 'Physio, Chiro, Acupuncture, Naturopath & RMT' },
+              { icon: 'mail', text: 'Send inquiry to get your clinic featured' },
             ].map((f, i) => (
               <View key={i} style={styles.featureRow}>
                 <View style={styles.featureIcon}>

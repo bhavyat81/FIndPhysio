@@ -24,6 +24,13 @@ export default function ClinicCard({ clinic, distance, compact = false }: Clinic
     }
   };
 
+  const handleDirections = () => {
+    const destination = encodeURIComponent(
+      clinic.address !== 'Brampton, ON' ? clinic.address : clinic.name + ', Brampton, ON'
+    );
+    Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${destination}`);
+  };
+
   return (
     <TouchableOpacity
       style={[styles.card, clinic.featured && styles.featuredCard]}
@@ -75,6 +82,10 @@ export default function ClinicCard({ clinic, distance, compact = false }: Clinic
                   <Text style={styles.callBtnText}>Call</Text>
                 </TouchableOpacity>
               )}
+              <TouchableOpacity style={styles.directionsBtn} onPress={handleDirections}>
+                <Ionicons name="navigate" size={14} color={Colors.primary} />
+                <Text style={styles.directionsBtnText}>Directions</Text>
+              </TouchableOpacity>
               <TouchableOpacity style={styles.detailBtn} onPress={handlePress}>
                 <Text style={styles.detailBtnText}>View Details</Text>
                 <Ionicons name="chevron-forward" size={14} color={Colors.primary} />
@@ -184,6 +195,21 @@ const styles = StyleSheet.create({
   },
   callBtnText: {
     color: Colors.white,
+    fontSize: FontSizes.sm,
+    fontWeight: '600',
+  },
+  directionsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs + 2,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+  },
+  directionsBtnText: {
+    color: Colors.primary,
     fontSize: FontSizes.sm,
     fontWeight: '600',
   },

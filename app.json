@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "FindPhysio",
+    "slug": "findphysio",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "findphysio",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0D9488"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.findphysio.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "FindPhysio needs your location to show nearby physiotherapy clinics.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "FindPhysio needs your location to show nearby physiotherapy clinics."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0D9488"
+      },
+      "package": "com.findphysio.app",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "FindPhysio needs your location to show nearby physiotherapy clinics."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

@@ -229,6 +229,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.featuredBg,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
+    overflow: 'hidden',
   },
   featuredSectionTitle: {
     fontSize: FontSizes.xl,

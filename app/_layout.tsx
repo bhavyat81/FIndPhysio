@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -8,49 +7,27 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.container}>
       <StatusBar style="light" />
-      <Stack
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: '#0891B2',
-          },
-          headerTintColor: '#FFFFFF',
-          headerTitleStyle: {
-            fontWeight: '700',
-          },
-          contentStyle: {
-            backgroundColor: '#F0F9FF',
-          },
-        }}
-      >
+      <Stack>
         <Stack.Screen
-          name="index"
+          name="(tabs)"
           options={{
-            title: 'FindPhysio',
-            headerRight: undefined,
-          }}
-        />
-        <Stack.Screen
-          name="list"
-          options={{
-            title: 'Clinics Near You',
+            headerShown: false,
           }}
         />
         <Stack.Screen
           name="clinic/[id]"
           options={{
             title: 'Clinic Details',
-          }}
-        />
-        <Stack.Screen
-          name="featured"
-          options={{
-            title: 'Get Featured',
-          }}
-        />
-        <Stack.Screen
-          name="about"
-          options={{
-            title: 'About FindPhysio',
+            headerStyle: {
+              backgroundColor: '#0891B2',
+            },
+            headerTintColor: '#FFFFFF',
+            headerTitleStyle: {
+              fontWeight: '700',
+            },
+            contentStyle: {
+              backgroundColor: '#F0F9FF',
+            },
           }}
         />
       </Stack>

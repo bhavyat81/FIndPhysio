@@ -15,6 +15,8 @@ import { getFeaturedClinics } from '@/data/clinics';
 import ClinicCard from '@/components/ClinicCard';
 import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/Colors';
 
+const INQUIRY_EMAIL = 'bhavyat81@gmail.com';
+
 const BENEFITS = [
   {
     icon: 'trending-up',
@@ -45,7 +47,6 @@ export default function FeaturedScreen() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
-  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = () => {
     if (!name.trim() || !clinic.trim() || !email.trim()) {
@@ -57,25 +58,15 @@ export default function FeaturedScreen() {
       Alert.alert('Invalid Email', 'Please enter a valid email address.');
       return;
     }
-    setSubmitting(true);
-    // Simulate submission
-    setTimeout(() => {
-      setSubmitting(false);
-      setName('');
-      setClinic('');
-      setEmail('');
-      setPhone('');
-      setMessage('');
-      Alert.alert(
-        'Inquiry Sent! 🎉',
-        'Thank you for your interest in getting featured. Our team will contact you within 1-2 business days.',
-        [{ text: 'Great!', style: 'default' }]
-      );
-    }, 1500);
+    const subject = encodeURIComponent('FindPhysio - Featured Listing Inquiry');
+    const body = encodeURIComponent(
+      `Business Name: ${clinic}\nContact Name: ${name}\nEmail: ${email}\nPhone: ${phone || 'N/A'}\n\nMessage:\n${message || 'No message provided.'}`
+    );
+    Linking.openURL(`mailto:${INQUIRY_EMAIL}?subject=${subject}&body=${body}`);
   };
 
   const handleEmailContact = () => {
-    Linking.openURL('mailto:featured@findphysio.ca?subject=Featured%20Listing%20Inquiry');
+    Linking.openURL(`mailto:${INQUIRY_EMAIL}?subject=FindPhysio%20-%20Featured%20Listing%20Inquiry`);
   };
 
   return (
@@ -193,17 +184,16 @@ export default function FeaturedScreen() {
             </View>
 
             <TouchableOpacity
-              style={[styles.submitBtn, submitting && styles.submitBtnDisabled]}
+              style={styles.submitBtn}
               onPress={handleSubmit}
-              disabled={submitting}
             >
               <Ionicons
-                name={submitting ? 'hourglass-outline' : 'send'}
+                name="send"
                 size={18}
                 color={Colors.white}
               />
               <Text style={styles.submitBtnText}>
-                {submitting ? 'Sending...' : 'Send Inquiry'}
+                Send Inquiry
               </Text>
             </TouchableOpacity>
           </View>
@@ -217,7 +207,7 @@ export default function FeaturedScreen() {
             </Text>
             <TouchableOpacity style={styles.emailBtn} onPress={handleEmailContact}>
               <Ionicons name="mail" size={16} color={Colors.primary} />
-              <Text style={styles.emailBtnText}>featured@findphysio.ca</Text>
+              <Text style={styles.emailBtnText}>{INQUIRY_EMAIL}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -377,9 +367,6 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     paddingVertical: Spacing.md,
     marginTop: Spacing.xs,
-  },
-  submitBtnDisabled: {
-    opacity: 0.7,
   },
   submitBtnText: {
     color: Colors.white,

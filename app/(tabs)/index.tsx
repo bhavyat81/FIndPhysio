@@ -136,7 +136,7 @@ export default function HomeScreen() {
             value={search}
             onChangeText={(text) => {
               setSearch(text);
-              if (text.length > 0) setSortByDistance(false);
+              if (text.length >= 2) setSortByDistance(false);
             }}
             returnKeyType="search"
             autoCorrect={false}

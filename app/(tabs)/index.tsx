@@ -10,7 +10,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { clinics, Clinic, getDistance } from '@/data/clinics';
@@ -20,7 +19,6 @@ import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/Colors';
 type ClinicWithOptDist = Clinic & { distance?: number };
 
 export default function HomeScreen() {
-  const router = useRouter();
   const [search, setSearch] = useState('');
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
@@ -78,56 +76,40 @@ export default function HomeScreen() {
             </Text>
           </View>
         </View>
+      </View>
 
-        {/* Nav Buttons */}
-        <View style={styles.navRow}>
+      {/* Search Bar with inline Near Me */}
+      <View style={styles.searchSection}>
+        <View style={styles.searchRow}>
+          <View style={styles.searchBar}>
+            <Ionicons name="search" size={18} color={Colors.textSecondary} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search clinics by name or address..."
+              placeholderTextColor={Colors.textLight}
+              value={search}
+              onChangeText={setSearch}
+              returnKeyType="search"
+              autoCorrect={false}
+              autoCapitalize="none"
+            />
+            {search.length > 0 && (
+              <TouchableOpacity onPress={() => setSearch('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Ionicons name="close-circle" size={18} color={Colors.textSecondary} />
+              </TouchableOpacity>
+            )}
+          </View>
           <TouchableOpacity
-            style={[styles.navBtn, styles.navBtnFeatured]}
-            onPress={() => router.push('/featured')}
-          >
-            <Ionicons name="star" size={16} color={Colors.accent} />
-            <Text style={[styles.navBtnText, { color: Colors.accent }]}>Featured Clinics</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.navBtn, sortByDistance ? styles.navBtnNearMeActive : styles.navBtnNearMe]}
+            style={[styles.nearMeBtn, sortByDistance && styles.nearMeBtnActive]}
             onPress={handleNearMe}
+            activeOpacity={0.8}
           >
             {locationLoading ? (
               <ActivityIndicator size="small" color={Colors.white} />
             ) : (
-              <Ionicons name="location" size={16} color={Colors.white} />
+              <Ionicons name="location" size={18} color={Colors.white} />
             )}
-            <Text style={[styles.navBtnText, { color: Colors.white }]}>Near Me</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.navBtn, styles.navBtnAbout]}
-            onPress={() => router.push('/about')}
-          >
-            <Ionicons name="information-circle-outline" size={16} color={Colors.white} />
-            <Text style={[styles.navBtnText, { color: Colors.white }]}>About</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Search Bar — outside FlatList so it never remounts */}
-      <View style={styles.searchSection}>
-        <View style={styles.searchBar}>
-          <Ionicons name="search" size={18} color={Colors.textSecondary} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search clinics by name or address..."
-            placeholderTextColor={Colors.textLight}
-            value={search}
-            onChangeText={setSearch}
-            returnKeyType="search"
-            autoCorrect={false}
-            autoCapitalize="none"
-          />
-          {search.length > 0 && (
-            <TouchableOpacity onPress={() => setSearch('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Ionicons name="close-circle" size={18} color={Colors.textSecondary} />
-            </TouchableOpacity>
-          )}
         </View>
         <Text style={styles.resultCount}>
           {search.length > 0
@@ -185,7 +167,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: Spacing.sm,
-    marginBottom: Spacing.md,
   },
   heroIconWrap: {
     width: 52,
@@ -211,41 +192,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     marginTop: 2,
   },
-  navRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
-  navBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.xs,
-    borderRadius: BorderRadius.md,
-    paddingVertical: Spacing.sm + 2,
-    borderWidth: 1.5,
-    borderColor: Colors.white + '44',
-  },
-  navBtnFeatured: {
-    backgroundColor: Colors.white + '18',
-    borderColor: Colors.accent + '88',
-  },
-  navBtnNearMe: {
-    backgroundColor: Colors.white + '18',
-    borderColor: Colors.white + '44',
-  },
-  navBtnNearMeActive: {
-    backgroundColor: Colors.primaryDark,
-    borderColor: Colors.white + '88',
-  },
-  navBtnAbout: {
-    backgroundColor: Colors.white + '18',
-    borderColor: Colors.white + '44',
-  },
-  navBtnText: {
-    fontSize: FontSizes.sm,
-    fontWeight: '700',
-  },
   searchSection: {
     backgroundColor: Colors.white,
     paddingHorizontal: Spacing.md,
@@ -254,7 +200,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
   searchBar: {
+    flex: 1,
     backgroundColor: Colors.background,
     borderRadius: BorderRadius.full,
     flexDirection: 'row',
@@ -270,6 +222,18 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md,
     color: Colors.text,
     padding: 0,
+  },
+  nearMeBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.full,
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  nearMeBtnActive: {
+    backgroundColor: Colors.primaryDark,
   },
   resultCount: {
     fontSize: FontSizes.xs,
@@ -297,4 +261,3 @@ const styles = StyleSheet.create({
     color: Colors.textLight,
   },
 });
-

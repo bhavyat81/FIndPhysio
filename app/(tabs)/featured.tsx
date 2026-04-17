@@ -70,7 +70,7 @@ export default function FeaturedScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Featured Clinics List */}
         {featuredClinics.length > 0 && (

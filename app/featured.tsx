@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getFeaturedClinics } from '@/data/clinics';
+import ClinicCard from '@/components/ClinicCard';
 import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/Colors';
 
 const BENEFITS = [
@@ -37,6 +39,7 @@ const BENEFITS = [
 ];
 
 export default function FeaturedScreen() {
+  const featuredClinics = getFeaturedClinics();
   const [name, setName] = useState('');
   const [clinic, setClinic] = useState('');
   const [email, setEmail] = useState('');
@@ -78,6 +81,19 @@ export default function FeaturedScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Featured Clinics List */}
+        {featuredClinics.length > 0 && (
+          <View style={styles.featuredSection}>
+            <Text style={styles.featuredSectionTitle}>Featured Clinics</Text>
+            <Text style={styles.featuredSectionSubtitle}>
+              Top-rated physiotherapy clinics in Brampton & GTA
+            </Text>
+            {featuredClinics.map((c) => (
+              <ClinicCard key={c.id} clinic={c} />
+            ))}
+          </View>
+        )}
+
         {/* Hero */}
         <View style={styles.hero}>
           <View style={styles.heroIconWrap}>
@@ -216,6 +232,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  featuredSection: {
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm,
+    backgroundColor: Colors.featuredBg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  featuredSectionTitle: {
+    fontSize: FontSizes.xl,
+    fontWeight: '800',
+    color: Colors.text,
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.xs,
+  },
+  featuredSectionSubtitle: {
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.md,
   },
   hero: {
     backgroundColor: Colors.primary,
